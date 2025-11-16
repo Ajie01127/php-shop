@@ -1,0 +1,21 @@
+{
+    "name": "private-mall/system",
+    "description": "私域商城系统 - 基于PHP的现代化B2C电商平台",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Core\\": "core/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
