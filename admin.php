@@ -3,13 +3,20 @@
  * 私域商城系统 - 管理后台入口
  */
 
-session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/core/security.php';
 
 use Core\Router;
 use Core\Database;
+use Core\SecurityHeaders;
+use Core\SessionSecurity;
+
+// 初始化安全会话
+SessionSecurity::init();
+
+// 发送安全头
+SecurityHeaders::sendAll();
 
 // 加载配置
 $config = require __DIR__ . '/config/config.php';
@@ -136,6 +143,30 @@ $router->get('/admin/sms/settings', 'Admin\\SmsController@settings');
 $router->post('/admin/sms/settings/update', 'Admin\\SmsController@updateSettings');
 $router->post('/admin/sms/settings/test', 'Admin\\SmsController@testConnection');
 $router->get('/admin/sms/statistics', 'Admin\\SmsController@statistics');
+
+// 邮箱管理路由
+$router->get('/admin/email/config', 'Admin\\EmailController@config');
+$router->post('/admin/email/config', 'Admin\\EmailController@config');
+$router->post('/admin/email/test-config', 'Admin\\EmailController@testConfig');
+$router->post('/admin/email/send-test-email', 'Admin\\EmailController@sendTestEmail');
+
+// 邮箱通知配置
+$router->get('/admin/email/notifications', 'Admin\\EmailController@notifications');
+$router->get('/admin/email/notification/edit/{eventType?}', 'Admin\\EmailController@editNotification');
+$router->post('/admin/email/notification/edit/{eventType?}', 'Admin\\EmailController@editNotification');
+$router->post('/admin/email/batch-update-status', 'Admin\\EmailController@batchUpdateStatus');
+$router->get('/admin/email/preview-template', 'Admin\\EmailController@previewTemplate');
+
+// 邮件日志
+$router->get('/admin/email/logs', 'Admin\\EmailController@logs');
+$router->get('/admin/email/log/view/{id}', 'Admin\\EmailController@viewLog');
+$router->post('/admin/email/batch-delete-logs', 'Admin\\EmailController@batchDeleteLogs');
+$router->post('/admin/email/delete-log/{id}', 'Admin\\EmailController@deleteLog');
+$router->post('/admin/email/clear-logs', 'Admin\\EmailController@clearLogs');
+$router->post('/admin/email/retry-failed', 'Admin\\EmailController@retryFailed');
+
+// 邮件统计
+$router->get('/admin/email/statistics', 'Admin\\EmailController@statistics');
 // 电子面单打印路由
 $router->get('/admin/express/print-config', 'Admin\\ExpressController@printConfig');
 $router->get('/admin/express/print-config/get', 'Admin\\ExpressController@getPrintConfig');

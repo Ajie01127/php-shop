@@ -7,8 +7,8 @@ return [
     // 应用配置
     'app' => [
         'name' => '私域商城系统',
-        'env' => 'development', // development, production
-        'debug' => true,
+        'env' => 'production', // development, production
+        'debug' => false,
         'url' => 'http://localhost',
         'timezone' => 'Asia/Shanghai',
     ],
@@ -16,11 +16,11 @@ return [
     // 数据库配置
     'database' => [
         'driver' => 'mysql',
-        'host' => 'localhost',
-        'port' => '3306',
-        'database' => 'private_mall',
-        'username' => 'root',
-        'password' => '',
+        'host' => $_ENV['DB_HOST'] ?? 'localhost',
+        'port' => $_ENV['DB_PORT'] ?? '3306',
+        'database' => $_ENV['DB_DATABASE'] ?? 'private_mall',
+        'username' => $_ENV['DB_USERNAME'] ?? 'root',
+        'password' => $_ENV['DB_PASSWORD'] ?? '',
         'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
         'prefix' => '',
@@ -47,25 +47,25 @@ return [
     // 支付配置
     'payment' => [
         'wechat' => [
-            'app_id' => 'wx1234567890abcdef',  // 微信支付APPID
-            'mch_id' => '1234567890',          // 商户号
-            'api_key' => 'your_api_v3_key_32_characters', // APIv3密钥(32位)
+            'app_id' => $_ENV['WECHAT_APP_ID'] ?? '',  // 微信支付APPID
+            'mch_id' => $_ENV['WECHAT_MCH_ID'] ?? '', // 商户号
+            'api_key' => $_ENV['WECHAT_API_KEY'] ?? '', // APIv3密钥(32位)
             'cert_path' => __DIR__ . '/../certs/apiclient_cert.pem',  // 商户证书路径
             'key_path' => __DIR__ . '/../certs/apiclient_key.pem',    // 商户私钥路径
         ],
         'alipay' => [
-            'app_id' => '',
-            'private_key' => '',
-            'public_key' => '',
+            'app_id' => $_ENV['ALIPAY_APP_ID'] ?? '',
+            'private_key' => $_ENV['ALIPAY_PRIVATE_KEY'] ?? '',
+            'public_key' => $_ENV['ALIPAY_PUBLIC_KEY'] ?? '',
         ],
     ],
 
     // 小程序配置
     'miniprogram' => [
-        'app_id' => 'wx1234567890abcdef',      // 小程序AppID
-        'app_secret' => 'yourappsecret',       // 小程序AppSecret
+        'app_id' => $_ENV['MINIPROGRAM_APP_ID'] ?? '',      // 小程序AppID
+        'app_secret' => $_ENV['MINIPROGRAM_APP_SECRET'] ?? '', // 小程序AppSecret
         'token_expire' => 7200,                // token过期时间(秒)
-        'api_domain' => 'https://yourdomain.com', // API域名
-        'debug' => true,                       // 调试模式
+        'api_domain' => $_ENV['API_DOMAIN'] ?? 'https://yourdomain.com', // API域名
+        'debug' => false,                      // 调试模式
     ],
 ];

@@ -57,21 +57,21 @@
                     </div>
                     <div class="order-actions">
                         <?php if ($order['status'] === 'pending'): ?>
-                            <a href="/payment/pay?order_id=<?= $order['id'] ?>" class="btn btn-primary">
+                            <a href="/payment/pay?order_id=<?= (int)$order['id'] ?>" class="btn btn-primary">
                                 <i class="fab fa-weixin"></i> 去支付
                             </a>
-                            <button class="btn btn-default" onclick="cancelOrder(<?= $order['id'] ?>)">取消订单</button>
+                            <button class="btn btn-default" onclick="cancelOrder(<?= (int)$order['id'] ?>)">取消订单</button>
                         <?php endif; ?>
                         
                         <?php if ($order['status'] === 'shipped'): ?>
-                            <button class="btn btn-primary" onclick="confirmReceive(<?= $order['id'] ?>)">确认收货</button>
+                            <button class="btn btn-primary" onclick="confirmReceive(<?= (int)$order['id'] ?>)">确认收货</button>
                         <?php endif; ?>
                         
                         <?php if ($order['status'] === 'paid'): ?>
-                            <button class="btn btn-default" onclick="applyRefund(<?= $order['id'] ?>)">申请退款</button>
+                            <button class="btn btn-default" onclick="applyRefund(<?= (int)$order['id'] ?>)">申请退款</button>
                         <?php endif; ?>
                         
-                        <a href="/order/<?= $order['id'] ?>" class="btn btn-default">查看详情</a>
+                        <a href="/order/<?= (int)$order['id'] ?>" class="btn btn-default">查看详情</a>
                     </div>
                 </div>
             </div>

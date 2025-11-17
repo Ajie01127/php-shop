@@ -170,18 +170,15 @@ class SettingController extends Controller
         $maxSize = $this->settingModel->get('upload_max_size', 5) * 1024 * 1024; // MB转字节
         $allowExt = explode(',', $this->settingModel->get('upload_allow_ext', 'jpg,jpeg,png,gif'));
         
-        // 验证文件大小
-        if ($file['size'] > $maxSize) {
-            $this->error('文件大小超过限制');
+        // 使用安全验证函数
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $validation = validate_upload($file, $allowedTypes, $maxSize);
+        if (!$validation['valid']) {
+            $this->error($validation['error']);
             return;
         }
-
-        // 验证文件类型
+        
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, $allowExt)) {
-            $this->error('不支持的文件类型');
-            return;
-        }
 
         // 生成文件名
         $fileName = date('YmdHis') . '_' . uniqid() . '.' . $ext;
@@ -193,6 +190,24 @@ class SettingController extends Controller
             mkdir($fullPath, 0755, true);
         }
 
+        // 额外的安全检查：验证文件内容
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $actualMimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        
+        $validMimes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg', 
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp'
+        ];
+        
+        if ($validMimes[$ext] !== $actualMimeType) {
+            $this->error('文件类型与扩展名不匹配');
+            return;
+        }
+        
         // 移动文件
         if (move_uploaded_file($file['tmp_name'], $fullPath . $fileName)) {
             $url = $uploadPath . $fileName;

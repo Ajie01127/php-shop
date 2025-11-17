@@ -203,7 +203,9 @@ class ExpressOrder extends Model
         $sql = "SELECT * FROM {$this->table} 
                 WHERE " . implode(' AND ', $where) . "
                 ORDER BY id DESC
-                LIMIT {$offset}, {$pageSize}";
+                LIMIT ?, ?";
+        $values[] = $offset;
+        $values[] = $pageSize;
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute($values);

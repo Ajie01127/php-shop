@@ -4,6 +4,27 @@
  */
 
 /**
+ * 安全输出函数 - 防止XSS攻击
+ */
+function e($string, $encoding = 'UTF-8') {
+    return htmlspecialchars($string, ENT_QUOTES | ENT_HTML5, $encoding);
+}
+
+/**
+ * 获取输入值并进行安全处理
+ */
+function input($key, $default = '', $filter = FILTER_SANITIZE_STRING) {
+    $value = $_POST[$key] ?? $_GET[$key] ?? $default;
+    if (is_string($value)) {
+        $value = trim($value);
+        if ($filter !== null) {
+            $value = filter_var($value, $filter);
+        }
+    }
+    return $value;
+}
+
+/**
  * 获取配置值
  */
 function config($key, $default = null) {

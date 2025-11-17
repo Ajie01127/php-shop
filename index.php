@@ -4,13 +4,20 @@
  * 前台商城入口
  */
 
-session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/core/security.php';
 
 use Core\Router;
 use Core\Database;
+use Core\SecurityHeaders;
+use Core\SessionSecurity;
+
+// 初始化安全会话
+SessionSecurity::init();
+
+// 发送安全头
+SecurityHeaders::sendAll();
 
 // 加载配置
 $config = require __DIR__ . '/config/config.php';

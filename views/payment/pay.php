@@ -243,7 +243,7 @@
 </style>
 
 <script>
-let orderId = <?= $order['id'] ?>;
+let orderId = <?= (int)$order['id'] ?>;
 let orderNo = '<?= e($order['order_no']) ?>';
 let paymentTimer = null;
 let currentPayType = 'wechat';
@@ -304,7 +304,7 @@ function createPayment() {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `order_no=${orderNo}&pay_type=${payType}&amount=${<?= $order['pay_amount'] ?>}`
+        body: `order_no=${orderNo}&pay_type=${payType}&amount=<?= number_format($order['pay_amount'], 2, '.', '') ?>`
     })
     .then(res => res.json())
     .then(data => {

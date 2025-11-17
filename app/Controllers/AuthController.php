@@ -107,11 +107,34 @@ class AuthController extends Controller {
         ]);
         
         if ($userId) {
+            // 发送欢迎邮件
+            $this->sendWelcomeEmail($userId, $username, $email);
+            
             flash('success', '注册成功，请登录');
             $this->redirect('/login');
         } else {
             flash('error', '注册失败，请重试');
             $this->redirect('/register');
+        }
+    }
+    
+    /**
+     * 发送欢迎邮件
+     */
+    private function sendWelcomeEmail($userId, $username, $email)
+    {
+        try {
+            $emailNotificationService = new \App\Services\EmailNotificationService();
+            $emailNotificationService->triggerNotification('user_register', [
+                'user_id' => $userId,
+                'email' => $email,
+                'username' => $username,
+                'register_time' => date('Y-m-d H:i:s')
+            ]);
+            
+        } catch (\Exception $e) {
+            // 邮件发送失败不影响主流程
+            error_log('Welcome email failed: ' . $e->getMessage());
         }
     }
     

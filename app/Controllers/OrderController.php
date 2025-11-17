@@ -120,6 +120,9 @@ class OrderController extends Controller {
             // 清空购物车
             $this->db->delete("DELETE FROM cart WHERE user_id = ?", [$userId]);
             
+            // 发送订单创建邮件通知
+            $this->sendOrderCreatedEmail($orderId, $userId, $orderItems, $totalAmount);
+            
             // 直接跳转到支付页面
             $this->success('订单创建成功', [
                 'order_id' => $orderId,
@@ -153,5 +156,46 @@ class OrderController extends Controller {
             'orders' => $orders,
             'status' => $status,
         ]);
+    }
+    
+    /**
+     * 发送订单创建邮件通知
+     */
+    private function sendOrderCreatedEmail($orderId, $userId, $orderItems, $totalAmount)
+    {
+        try {
+            // 获取用户信息
+            $user = $this->db->selectOne(
+                "SELECT id, username, email FROM users WHERE id = ?",
+                [$userId]
+            );
+            
+            if (!$user || empty($user['email'])) {
+                return;
+            }
+            
+            // 获取订单信息
+            $order = $this->db->selectOne(
+                "SELECT * FROM orders WHERE id = ?",
+                [$orderId]
+            );
+            
+            // 发送邮件通知
+            $emailNotificationService = new \App\Services\EmailNotificationService();
+            $emailNotificationService->triggerNotification('order_created', [
+                'user_id' => $userId,
+                'email' => $user['email'],
+                'username' => $user['username'],
+                'order_no' => $order['order_no'],
+                'order_id' => $orderId,
+                'total_amount' => $totalAmount,
+                'items' => $orderItems,
+                'created_at' => $order['created_at']
+            ]);
+            
+        } catch (\Exception $e) {
+            // 邮件发送失败不影响主流程
+            error_log('Order creation email failed: ' . $e->getMessage());
+        }
     }
 }

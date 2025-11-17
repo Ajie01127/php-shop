@@ -12,10 +12,12 @@ class Product extends Model {
      */
     public function getActiveProducts($limit = null) {
         $sql = "SELECT * FROM {$this->table} WHERE status = 1 ORDER BY sort_order DESC, created_at DESC";
+        $params = [];
         if ($limit) {
-            $sql .= " LIMIT {$limit}";
+            $sql .= " LIMIT ?";
+            $params[] = $limit;
         }
-        return $this->db->select($sql);
+        return $this->db->select($sql, $params);
     }
     
     /**
@@ -23,10 +25,12 @@ class Product extends Model {
      */
     public function getByCategory($categoryId, $limit = null) {
         $sql = "SELECT * FROM {$this->table} WHERE category_id = ? AND status = 1 ORDER BY sort_order DESC";
+        $params = [$categoryId];
         if ($limit) {
-            $sql .= " LIMIT {$limit}";
+            $sql .= " LIMIT ?";
+            $params[] = $limit;
         }
-        return $this->db->select($sql, [$categoryId]);
+        return $this->db->select($sql, $params);
     }
     
     /**

@@ -416,22 +416,92 @@ class PaymentController
      */
     private function handlePaymentSuccess($orderNo, $tradeNo, $amount, $payType)
     {
-        // 这里实现具体的业务逻辑
-        // 例如：更新订单状态、发送通知、记录日志等
-        
-        // 记录支付成功日志
-        file_put_contents('payment_success.log', 
-            date('Y-m-d H:i:s') . ' - ' . 
-            'Order: ' . $orderNo . ', ' .
-            'Trade: ' . $tradeNo . ', ' .
-            'Amount: ' . $amount . ', ' .
-            'Type: ' . $payType . "
+        try {
+            // 获取数据库连接
+            $db = \Core\Database::getInstance();
+            
+            // 查询订单信息
+            $order = $db->selectOne(
+                "SELECT o.*, u.email, u.username 
+                 FROM orders o 
+                 LEFT JOIN users u ON o.user_id = u.id 
+                 WHERE o.order_no = ?",
+                [$orderNo]
+            );
+            
+            if (!$order) {
+                file_put_contents('payment_error.log', 
+                    date('Y-m-d H:i:s') . ' - Order not found: ' . $orderNo . "
 ", 
-            FILE_APPEND
-        );
+                    FILE_APPEND
+                );
+                return;
+            }
+            
+            // 更新订单状态
+            $db->update(
+                "UPDATE orders SET 
+                 status = 'paid', 
+                 pay_status = 'paid',
+                 pay_time = NOW(),
+                 pay_type = ?,
+                 trade_no = ?
+                 WHERE order_no = ?",
+                [$payType, $tradeNo, $orderNo]
+            );
+            
+            // 记录支付成功日志
+            file_put_contents('payment_success.log', 
+                date('Y-m-d H:i:s') . ' - ' . 
+                'Order: ' . $orderNo . ', ' .
+                'Trade: ' . $tradeNo . ', ' .
+                'Amount: ' . $amount . ', ' .
+                'Type: ' . $payType . "
+", 
+                FILE_APPEND
+            );
 
-        // TODO: 调用业务逻辑处理支付成功
-        // $this->orderService->updateOrderStatus($orderNo, 'paid', $tradeNo, $amount);
+            // 发送邮件通知
+            $this->sendPaymentNotificationEmail($order, $tradeNo, $amount, $payType);
+            
+        } catch (\Exception $e) {
+            file_put_contents('payment_error.log', 
+                date('Y-m-d H:i:s') . ' - Error: ' . $e->getMessage() . "
+", 
+                FILE_APPEND
+            );
+        }
+    }
+    
+    /**
+     * 发送支付成功邮件通知
+     */
+    private function sendPaymentNotificationEmail($order, $tradeNo, $amount, $payType)
+    {
+        try {
+            $emailNotificationService = new \App\Services\EmailNotificationService();
+            
+            // 发送支付成功通知给用户
+            $emailNotificationService->triggerNotification('payment_success', [
+                'user_id' => $order['user_id'],
+                'email' => $order['email'],
+                'username' => $order['username'],
+                'order_no' => $order['order_no'],
+                'order_id' => $order['id'],
+                'amount' => $amount,
+                'pay_type' => $payType,
+                'trade_no' => $tradeNo,
+                'pay_time' => date('Y-m-d H:i:s')
+            ]);
+            
+        } catch (\Exception $e) {
+            // 邮件发送失败不影响主流程
+            file_put_contents('email_error.log', 
+                date('Y-m-d H:i:s') . ' - Payment email failed: ' . $e->getMessage() . "
+", 
+                FILE_APPEND
+            );
+        }
     }
 
     /**

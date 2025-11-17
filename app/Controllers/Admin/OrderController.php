@@ -63,12 +63,69 @@ class OrderController extends Controller {
             $this->error('无效的状态');
         }
         
+        // 获取更新前的订单信息
+        $order = $this->orderModel->getOrderDetail($id);
+        if (!$order) {
+            $this->error('订单不存在');
+        }
+        
         $result = $this->orderModel->updateStatus($id, $status);
         
         if ($result) {
+            // 发送状态变更邮件通知
+            $this->sendOrderStatusChangeEmail($order, $status);
+            
             $this->success('状态更新成功');
         } else {
             $this->error('状态更新失败');
+        }
+    }
+    
+    /**
+     * 发送订单状态变更邮件通知
+     */
+    private function sendOrderStatusChangeEmail($order, $newStatus)
+    {
+        try {
+            $eventType = '';
+            $subject = '';
+            
+            switch ($newStatus) {
+                case 'shipped':
+                    $eventType = 'order_shipped';
+                    $subject = '订单已发货';
+                    break;
+                case 'completed':
+                    $eventType = 'order_completed';
+                    $subject = '订单已完成';
+                    break;
+                case 'cancelled':
+                    $eventType = 'order_cancelled';
+                    $subject = '订单已取消';
+                    break;
+                default:
+                    return; // 其他状态不发送邮件
+            }
+            
+            if (empty($eventType) || empty($order['user_email'])) {
+                return;
+            }
+            
+            $emailNotificationService = new \App\Services\EmailNotificationService();
+            $emailNotificationService->triggerNotification($eventType, [
+                'user_id' => $order['user_id'],
+                'email' => $order['user_email'],
+                'username' => $order['user_name'],
+                'order_no' => $order['order_no'],
+                'order_id' => $order['id'],
+                'status' => $newStatus,
+                'total_amount' => $order['total_amount'],
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+            
+        } catch (\Exception $e) {
+            // 邮件发送失败不影响主流程
+            error_log('Order status change email failed: ' . $e->getMessage());
         }
     }
 }

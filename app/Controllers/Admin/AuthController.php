@@ -41,8 +41,14 @@ class AuthController extends Controller {
             $this->redirect('/admin/login');
         }
         
+        // 重新生成会话ID防止会话固定攻击
+        session_regenerate_id(true);
+        
         $_SESSION['admin_id'] = $admin['id'];
         $_SESSION['admin'] = $admin;
+        $_SESSION['login_time'] = time();
+        $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'];
+        $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
         
         $this->redirect('/admin/dashboard');
     }
@@ -51,8 +57,19 @@ class AuthController extends Controller {
      * 退出登录
      */
     public function logout() {
-        unset($_SESSION['admin_id']);
-        unset($_SESSION['admin']);
+        // 清空所有会话数据
+        session_unset();
+        session_destroy();
+        
+        // 删除会话cookie
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        
         $this->redirect('/admin/login');
     }
 }

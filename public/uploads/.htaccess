@@ -1,0 +1,28 @@
+# 防止执行脚本文件
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phps|pht|exe|sh|bat|cmd)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 禁用PHP执行
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+
+# 只允许特定类型的文件
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# 防止目录浏览
+Options -Indexes
+
+# 防止访问隐藏文件
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

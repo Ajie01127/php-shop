@@ -111,15 +111,18 @@ class Model {
     public function paginate($page = 1, $perPage = 20, $where = null) {
         $offset = ($page - 1) * $perPage;
         $sql = "SELECT * FROM {$this->table}";
+        $params = [];
         
         if ($where) {
             $sql .= " WHERE {$where}";
         }
         
-        $sql .= " LIMIT {$perPage} OFFSET {$offset}";
+        $sql .= " LIMIT ? OFFSET ?";
+        $params[] = $perPage;
+        $params[] = $offset;
         
         return [
-            'data' => $this->db->select($sql),
+            'data' => $this->db->select($sql, $params),
             'total' => $this->count($where),
             'per_page' => $perPage,
             'current_page' => $page,
